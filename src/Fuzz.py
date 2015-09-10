@@ -19,8 +19,9 @@ def read_input():
     parser.add_argument("--custom-auth=", help=
                         "Signal that the fuzzer should use hard-coded authentication " +
                         "for a specific application. Optional.", nargs='?')
+                        
     parser.add_argument("--common-words=", help="Newline-delimited file of common words to be used " +
-                                                "in page guessing and input guessing. Required.", nargs='?')
+                        "in page guessing and input guessing. Required.", nargs='?')
 
     parser.add_argument("--vectors=", help="Newline-delimited file full of possible vulnerabilities",
                         nargs='?')
