@@ -9,9 +9,9 @@ Web fuzzer for SE331
 
 def read_input():
     parser = argparse.ArgumentParser(usage="python fuzz.py [discover | test] url OPTIONS")
-    parser.add_argument('mode', help="discover  Output a comprehensive, human readable " +
+    parser.add_argument('mode', help="discover\n  Output a comprehensive, human readable " +
                                      "list of all discovered inputs to the system.\n" +
-                                     "  test      Discover all inputs, " +
+                                     "test\n      Discover all inputs, " +
                                      "then attempt a list of exploit vectors on those inputs. "+
                                      "Report vulnerabilities.", nargs=1)
 
@@ -21,7 +21,7 @@ def read_input():
                         "for a specific application. Optional.", nargs='?')
     parser.add_argument("--common-words=", help="Newline-demilited file of common words to be used " +
                                                 "in page guessing and input guessing. Required.", nargs='?')
-    parser.add_argument("--vectors=", help="Newline-demilited file data that should never be leaked.",
+    parser.add_argument("--vectors=", help="Newline-delimited file full of possible vulnerabilities",
                         nargs='?')
     parser.add_argument("--sensitive=", help="Newline-demilited file data that should never be leaked.",
                         nargs='?')
@@ -35,6 +35,6 @@ def read_input():
 def main():
 
     args = read_input()
-    
+
 
 main()
