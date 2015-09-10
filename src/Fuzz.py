@@ -19,15 +19,17 @@ def read_input():
     parser.add_argument("--custom-auth=", help=
                         "Signal that the fuzzer should use hard-coded authentication " +
                         "for a specific application. Optional.", nargs='?')
-    parser.add_argument("--common-words=", help="Newline-demilited file of common words to be used " +
+    parser.add_argument("--common-words=", help="Newline-delimited file of common words to be used " +
                                                 "in page guessing and input guessing. Required.", nargs='?')
+
     parser.add_argument("--vectors=", help="Newline-delimited file full of possible vulnerabilities",
                         nargs='?')
-    parser.add_argument("--sensitive=", help="Newline-demilited file data that should never be leaked.",
+
+    parser.add_argument("--sensitive=", help="Newline-delimited file data that should never be leaked.",
                         nargs='?')
+
     parser.add_argument("--random=", action="store_true", help="When off, try each input systematically. " +
-                                                               "When on, choose randomly.",
-                         default=False)
+                        "When on, choose randomly.", default=False)
 
     parser.add_argument("--slow=", type=int, help="Number of ms considered to be slow.", nargs='?')
     return parser.parse_args()
