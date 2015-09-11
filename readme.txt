@@ -1,7 +1,8 @@
 Update this as necessary.
 
 README:
-1. Install the python requests package by typing pip install requests in the terminal
+1. Install the python requests package and beautifulsoup by typing
+pip install requests followed by pip install beautifulsoup in the command line
 2. Download xampp-portable from http://yogi.se.rit.edu/~swen-331/bigfiles/xampp-portable.zip
 3. Run xampp-setup.bat
 4. Run apache_start.bat
