@@ -4,7 +4,7 @@ import sys
 sys.path.append("src/")
 sys.path.append("src/res/")
 import Crawler
-
+import time
 
 """
 Web fuzzer for SE331
@@ -43,8 +43,11 @@ def main():
 
     args = read_input()
     crawl = Crawler.Crawler(args)
+    start_time = time.time()
     crawl.crawl()
     for url in crawl.visited:
         print(url + '\n')
+
+    print("Program runtime: " + str(time.time()-start_time) + "seconds")
 
 main()
