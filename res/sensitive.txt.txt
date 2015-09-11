@@ -1,5 +1,4 @@
+XSS
 tomcat
 mysql
 apache
-java
-manager

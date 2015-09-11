@@ -13,7 +13,7 @@ url - current url
 class Crawler:
 
     dvwa = {'username': 'admin', 'password': 'password', 'Login': 'Login'}
-    bodgeit = {'username': 'fake@fake.com', 'password': 'password'}
+    bodgeit = {'username': 'fake@fake.com', 'password1': 'password', 'password2': 'password'}
     extensions = ['.jsp', '.php', '.html', '.js', '.asp']
 
     """
@@ -22,7 +22,6 @@ class Crawler:
     For the arrays, opens the file and reads in the data. Splits it by \n
     """
     def __init__(self, args):
-        self.extensions=['.jsp', '.php', '.html', '.js', '.asp']
         self.mode = args['mode']
         self.url = args['url']
         self.authflag = args['custom_auth=']
@@ -31,9 +30,10 @@ class Crawler:
         self.sensitive = open('res/'+args['sensitive='], 'r').read().split('\n') if args['sensitive='] else []
         self.random = args['random=']
         self.slow = args['slow=']
-        self.session = requests.Session()
         self.accessible = []
         self.visited = []
+        self.authcookie = ''
+        self.session = ''
 
 
     """
@@ -51,7 +51,7 @@ class Crawler:
     def switch(self):
         return {
             'dvwa': 'http://127.0.0.1/dvwa/login.php',
-            'bodgeit': 'http://127.0.0.1:8080/bodgeit/login.jsp',
+            'bodgeit': 'http://127.0.0.1:8080/bodgeit/register.jsp',
             '': 'http://127.0.0.1'
         }[self.authflag]
 
@@ -61,12 +61,19 @@ class Crawler:
     """
     def open_connection(self):
         url = self.switch()
+        self.session = requests.Session()
         self.session.auth = getattr(self, self.authflag)
-        r = requests.post(url, data=self.session.auth, allow_redirects=True)
+        r = requests.post(url, allow_redirects=True)
+        print(r.cookies)
+        print(r.status_code)
         html = self.get_html(r.url)
+        g = requests.get('http://127.0.0.1/dvwa/index.php', r.cookies)
+        html2 = self.get_html(g.url)
+        print(html2)
         self.parse_urls(html)
 
-
+    def parse_forms(self, html):
+        pass
 
     """
     Returns a list of all urls found on the HTML page
@@ -74,13 +81,12 @@ class Crawler:
     def parse_urls(self, html):
         link = 'http://127.0.0.1:8080/bodgeit/' if self.authflag == 'bodgeit' else 'http://127.0.0.1/dvwa/'
         for url in re.findall('<a href="?\'?([^"\'>]*)', html):
-            print(url)
-            if link + url not in self.accessible:
+            if link + url not in self.accessible and "logout" not in url:
                 self.accessible.append(link + url)
 
 
     def post(self, url, data):
-        r = requests.post(url, data=data, allow_redirects=True)
+        r = requests.post(url, data=data, allow_redirects=True, cookies=self.authcookie)
         return r
 
 
@@ -89,8 +95,8 @@ class Crawler:
     Gets the pure HTML of a given page
     """
     def get_html(self, url):
-        r = requests.get(url)
-        return r.text
+        r = requests.get(url, cookies=self.authcookie)
+        return r.text if r.status_code == requests.codes.ok else ''
 
 
     """

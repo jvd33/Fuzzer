@@ -1,0 +1,6 @@
+admin
+password
+security
+logout
+login
+index
