@@ -2,6 +2,7 @@ __author__ = 'Joe'
 from requests.auth import HTTPBasicAuth
 import requests
 import re
+import Parser
 
 
 """
@@ -25,6 +26,7 @@ class Crawler:
     def __init__(self, args):
         self.mode = args['mode']
         self.url = args['url']
+        self.parser = Parser(self.url)
         self.authflag = args['custom_auth=']
         self.common = open('res/' + args['common_words='], 'r').read().split('\n') if args['common_words='] else []
         self.vectors = open('res/' + args['vectors='], 'r').read().split('\n') if args['vectors='] else []
@@ -73,7 +75,7 @@ class Crawler:
     Returns a list of all urls found on the HTML page
     """
     def parse_urls(self, html, s):
-        link = 'http://127.0.0.1:8080/bodgeit/' if self.authflag == 'bodgeit' else 'http://127.0.0.1/dvwa/'
+        self.url = 'http://127.0.0.1:8080/bodgeit/' if self.authflag == 'bodgeit' else 'http://127.0.0.1/dvwa/'
         for url in re.findall('<a href="?\'?([^"\'>]*)', html):
             if link + url not in self.accessible and "logout" not in url and "hiderefer" not in url:
                 self.accessible.append(link + url)
@@ -102,7 +104,10 @@ class Crawler:
         with requests.Session() as s:
             r = s.post(url, data=getattr(self, self.authflag), allow_redirects=True)
             html = self.get_html(r.url, s)
-            self.parse_urls(html, s)
+            self.url = 'http://127.0.0.1:8080/bodgeit/' if self.authflag == 'bodgeit' else 'http://127.0.0.1/dvwa/'
+            self.parser.feed(html)
+            self.accessible.append(self.parser.get_urls())
+            #self.parse_urls(html, s)
             for url in self.accessible:
                 self.crawl_helper(url, s)
         return self.visited
@@ -112,7 +117,9 @@ class Crawler:
     Helper function to make visit each url
     """
     def crawl_helper(self, url, s):
-        html = self.get_html(url, s)
-        if not url in self.visited:
+        html = self.get_html(self.url+url, s)
+        self.parser.feed(html)
+
+        if url not in self.visited:
             self.visited.append(url)
-        self.parse_urls(html, s)
+        self.accessible.append(self.parser.get_urls())
