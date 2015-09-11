@@ -25,8 +25,8 @@ class Crawler:
     """
     def __init__(self, args):
         self.mode = args['mode']
-        self.url = args['url']
-        self.parser = Parser(self.url)
+        self.url = args['url'][0]
+        self.parser = Parser.Parser(self.url)
         self.authflag = args['custom_auth=']
         self.common = open('res/' + args['common_words='], 'r').read().split('\n') if args['common_words='] else []
         self.vectors = open('res/' + args['vectors='], 'r').read().split('\n') if args['vectors='] else []
@@ -106,7 +106,7 @@ class Crawler:
             html = self.get_html(r.url, s)
             self.url = 'http://127.0.0.1:8080/bodgeit/' if self.authflag == 'bodgeit' else 'http://127.0.0.1/dvwa/'
             self.parser.feed(html)
-            self.accessible.append(self.parser.get_urls())
+            self.accessible.extend(self.parser.get_urls())
             #self.parse_urls(html, s)
             for url in self.accessible:
                 self.crawl_helper(url, s)
@@ -119,7 +119,9 @@ class Crawler:
     def crawl_helper(self, url, s):
         html = self.get_html(self.url+url, s)
         self.parser.feed(html)
-
         if url not in self.visited:
             self.visited.append(url)
-        self.accessible.append(self.parser.get_urls())
+        for url in self.parser.get_urls():
+            if url not in self.accessible:
+                self.accessible.extend(self.parser.get_urls())
+                

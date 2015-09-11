@@ -5,18 +5,23 @@ from html.parser import HTMLParser
 class Parser(HTMLParser):
 
     def __init__(self, url):
+        HTMLParser.__init__(self)
         self.base_url = ''
         self.form_data = {}
         self.urls = []
 
     def handle_starttag(self, tag, attrs):
         if tag == 'form':
-            for key, val in attrs:
-                if key == 'hidden':
-                    attrs.pop(key, val)
-            self.form_data.update({attrs})
-        if tag == 'a' and 'logout' not in attrs['href'] and 'hiderefer' not in attrs['href']:
-            self.urls.append(attrs['href'])
+            coll = dict(attrs)
+            for key, val in coll.items():
+                if val == 'hidden':
+                    coll.pop(key)
+            self.form_data.update(coll)
+        if tag == 'a':
+            coll = dict(attrs)
+            for key, val in coll.items():
+                if key == 'href' and 'hiderefer' not in coll[key] and 'logout' not in coll[key]:
+                    self.urls.append(coll[key])
 
 
 
