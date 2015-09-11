@@ -1,6 +1,10 @@
 __author__ = 'Joe'
-import sys
 import argparse
+import sys
+sys.path.append("src/")
+sys.path.append("src/res/")
+import Crawler
+
 
 """
 Web fuzzer for SE331
@@ -18,8 +22,8 @@ def read_input():
     parser.add_argument('url', nargs=1, help="The URL to fuzz")
     parser.add_argument("--custom-auth=", help=
                         "Signal that the fuzzer should use hard-coded authentication " +
-                        "for a specific application. Optional.", nargs='?')
-                        
+                        "for a specific application. Optional.", nargs='?', default='')
+
     parser.add_argument("--common-words=", help="Newline-delimited file of common words to be used " +
                         "in page guessing and input guessing. Required.", nargs='?')
 
@@ -33,11 +37,15 @@ def read_input():
                         "When on, choose randomly.", default=False)
 
     parser.add_argument("--slow=", type=int, help="Number of ms considered to be slow.", nargs='?')
-    return parser.parse_args()
+    return vars(parser.parse_args())
 
 def main():
 
     args = read_input()
-
+    crawl = Crawler.Crawler(args)
+    crawl.open_connection()
+    crawl.crawl()
+    for url in crawl.visited:
+        print(url + '\n')
 
 main()
