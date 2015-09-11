@@ -1,4 +1,5 @@
 __author__ = 'Joe'
+from requests.auth import HTTPBasicAuth
 import requests
 import re
 
@@ -32,8 +33,6 @@ class Crawler:
         self.slow = args['slow=']
         self.accessible = []
         self.visited = []
-        self.authcookie = ''
-        self.session = ''
 
 
     """
@@ -58,35 +57,30 @@ class Crawler:
 
     """
     Logs in with the custom credentials, otherwise starts at localhost
-    """
+
     def open_connection(self):
         url = self.switch()
         self.session = requests.Session()
-        self.session.auth = getattr(self, self.authflag)
-        r = requests.post(url, allow_redirects=True)
-        print(r.cookies)
-        print(r.status_code)
+        self.session.auth = HTTPBasicAuth('admin', 'password')
+        r = self.session.post(url, allow_redirects=True)
         html = self.get_html(r.url)
-        g = requests.get('http://127.0.0.1/dvwa/index.php', r.cookies)
-        html2 = self.get_html(g.url)
-        print(html2)
         self.parse_urls(html)
-
+    """
     def parse_forms(self, html):
         pass
 
     """
     Returns a list of all urls found on the HTML page
     """
-    def parse_urls(self, html):
+    def parse_urls(self, html, s):
         link = 'http://127.0.0.1:8080/bodgeit/' if self.authflag == 'bodgeit' else 'http://127.0.0.1/dvwa/'
         for url in re.findall('<a href="?\'?([^"\'>]*)', html):
-            if link + url not in self.accessible and "logout" not in url:
+            if link + url not in self.accessible and "logout" not in url and "hiderefer" not in url:
                 self.accessible.append(link + url)
 
 
-    def post(self, url, data):
-        r = requests.post(url, data=data, allow_redirects=True, cookies=self.authcookie)
+    def post_form(self, url, data, s):
+        r = s.post(url, data=data, allow_redirects=True)
         return r
 
 
@@ -94,8 +88,8 @@ class Crawler:
     """
     Gets the pure HTML of a given page
     """
-    def get_html(self, url):
-        r = requests.get(url, cookies=self.authcookie)
+    def get_html(self, url, s):
+        r = s.get(url)
         return r.text if r.status_code == requests.codes.ok else ''
 
 
@@ -104,16 +98,21 @@ class Crawler:
     returns the urls it successfully visited
     """
     def crawl(self):
-        for url in self.accessible:
-            self.crawl_helper(url)
+        url = self.switch()
+        with requests.Session() as s:
+            r = s.post(url, data=getattr(self, self.authflag), allow_redirects=True)
+            html = self.get_html(r.url, s)
+            self.parse_urls(html, s)
+            for url in self.accessible:
+                self.crawl_helper(url, s)
         return self.visited
 
 
     """
     Helper function to make visit each url
     """
-    def crawl_helper(self, url):
-        html = self.get_html(url)
+    def crawl_helper(self, url, s):
+        html = self.get_html(url, s)
         if not url in self.visited:
             self.visited.append(url)
-        self.parse_urls(html)
+        self.parse_urls(html, s)

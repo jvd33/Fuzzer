@@ -43,7 +43,6 @@ def main():
 
     args = read_input()
     crawl = Crawler.Crawler(args)
-    crawl.open_connection()
     crawl.crawl()
     for url in crawl.visited:
         print(url + '\n')
