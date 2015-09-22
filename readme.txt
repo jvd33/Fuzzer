@@ -2,13 +2,13 @@ Update this as necessary.
 
 README:
 1. Install the python requests package and beautifulsoup by typing
-pip install requests followed by pip install beautifulsoup in the command line
+"pip install requests" followed by "pip install beautifulsoup4" in the command line
 2. Download xampp-portable from http://yogi.se.rit.edu/~swen-331/bigfiles/xampp-portable.zip
-3. Run xampp-setup.bat
+3. Run setup_xampp.bat
 4. Run apache_start.bat
 5. Run catalina_start.bat
 6. Run mysql_start.bat
-7. In the terminal, type python Fuzzer [discover | test] url OPTIONS
+7. In the terminal, type python Fuzz.py [discover | test] url OPTIONS
 
 Additional Usage Information:
 
@@ -41,6 +41,7 @@ Examples:
 
 http://www.se.rit.edu/~swen-331/projects/fuzzer/
 Author: Joe Diment jvd5839@rit.edu
+Author: Adam Audycki apa73952rit.edu
 
 Current features:
 Custom authentication
