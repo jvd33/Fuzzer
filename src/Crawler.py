@@ -38,9 +38,6 @@ class Crawler:
         self.accessible = []
         self.visited = []
         self.forms = {}
-        #self.c = open('res/common.txt','r').read().split('\n')
-        #self.vec = open('res/vectors.txt', 'r').read().split('\n')
-        #self.sen = open('res/sensitive.txt', 'r').read().split('\n')
 
 
     """
