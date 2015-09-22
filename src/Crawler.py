@@ -30,16 +30,17 @@ class Crawler:
         self.url = args['url'][0]
         self.parser = Parser.Parser()
         self.authflag = args['custom_auth=']
-        #self.common = open('res/' + args['common_words='], 'r').read().split('\n') if args['common_words='] else []
-        #self.vectors = open('res/' + args['vectors='], 'r').read().split('\n') if args['vectors='] else []
-        #self.sensitive = open('res/'+args['sensitive='], 'r').read().split('\n') if args['sensitive='] else []
+        self.common = open('res/' + args['common_words='], 'r').read().split('\n') if args['common_words='] else []
+        self.vectors = open('res/' + args['vectors='], 'r').read().split('\n') if args['vectors='] else []
+        self.sensitive = open('res/'+args['sensitive='], 'r').read().split('\n') if args['sensitive='] else []
         self.random = args['random=']
         self.slow = args['slow=']
         self.accessible = []
         self.visited = []
-        self.c = open('res/common.txt','r').read().split('\n')
-        self.vec = open('res/vectors.txt', 'r').read().split('\n')
-        self.sen = open('res/sensitive.txt', 'r').read().split('\n')
+        self.forms = {}
+        #self.c = open('res/common.txt','r').read().split('\n')
+        #self.vec = open('res/vectors.txt', 'r').read().split('\n')
+        #self.sen = open('res/sensitive.txt', 'r').read().split('\n')
 
 
     """
@@ -71,8 +72,8 @@ class Crawler:
     Used to discover potentially unlinked pages.
     """
     def post_url(self,url,s):
-        print(self.c)
-        r = s.post(url,self.c[0],allow_redirects=True)
+        print(self.common)
+        r = s.post(url,self.common[0],allow_redirects=True)
         return r
 
 
@@ -91,6 +92,7 @@ class Crawler:
 
     def get_cookie(self,url,s):
        print(s.cookies.values)
+
     """
     Crawls the webpage and finds all possible URLs to access
     returns the urls it successfully visited
@@ -103,20 +105,24 @@ class Crawler:
             html = r.text
             self.url = 'http://127.0.0.1:8080/bodgeit/' if self.authflag == 'bodgeit' else 'http://127.0.0.1/dvwa/'
             self.parser.parse(html)
-            self.accessible.extend(self.parser.get_urls())
+            if self.parser.form_data:
+                self.forms.update({self.url: self.parser.forms})
+            self.accessible.extend(self.parser.found_urls)
             for url in self.accessible:
                 if url not in self.visited:
                     self.accessible.remove(url)
                     self.crawl_helper(url, s)
-        return self.visited
+        return self.visited, self.parser.form_data
 
 
     """
     Helper function to make visit each url
     """
     def crawl_helper(self, url, s):
-        html = self.get_html(self.url+url, s)
+        html = self.get_html(self.url + url, s)
         self.parser.parse(html)
+        if self.parser.form_data:
+            self.forms.update({url: self.parser.form_data})
         self.visited.append(url)
-        self.accessible.extend(self.parser.get_urls())
+        self.accessible.extend(self.parser.found_urls)
                 

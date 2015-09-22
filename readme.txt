@@ -9,6 +9,7 @@ README:
 5. Run catalina_start.bat
 6. Run mysql_start.bat
 7. In the terminal, type python Fuzz.py [discover | test] url OPTIONS
+8. Fuzzing information is located in Fuzzer\src\output.txt
 
 Additional Usage Information:
 

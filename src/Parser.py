@@ -10,6 +10,7 @@ Custom HTML Parser to return interesting values from the HTML source.
 class Parser():
 
     def __init__(self):
+        self.base_url = ''
         self.form_data = []
         self.found_urls = []
 
@@ -33,16 +34,4 @@ class Parser():
 
                 #add it to found, and then add it to urls to pass to crawler
                 self.found_urls.append(element.attrs['href'])
-
-    """
-    Returns all URLs found in the text (relative paths)
-    """
-    def get_urls(self):
-        return self.found_urls
-
-    """
-    Returns all input form names for sending post requests.
-    """
-    def get_form_data(self):
-        return self.form_data
 

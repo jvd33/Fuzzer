@@ -45,9 +45,22 @@ def main():
     crawl = Crawler.Crawler(args)
     start_time = time.time()
     crawl.crawl()
+    output_string = "*****************\n" + "URLs and Forms Found \n*****************\n"
     for url in crawl.visited:
-        print(url + '\n')
+        output_string += "\nURL: " + url + "\n"
+        if url in crawl.forms.keys():
+            output_string += "Forms found on this page. Forms have fields: \n" + str(crawl.forms[url]) + "\n"
+        else:
+            output_string += "No form found on this page. \n"
+        #output_string += "\n"
 
+    #for key, val in crawl.forms.items():
+        #print(key + " " + str(val) + "\n")
+    with open("output.txt", "a+") as f:
+        f.seek(0)
+        f.truncate()
+        f.write(output_string)
+    print(output_string)
     print("Program runtime: " + str(time.time()-start_time) + "seconds")
 
 main()
