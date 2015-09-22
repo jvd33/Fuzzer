@@ -1,4 +1,0 @@
-XSS
-tomcat
-mysql
-apache
