@@ -30,13 +30,16 @@ class Crawler:
         self.url = args['url'][0]
         self.parser = Parser.Parser()
         self.authflag = args['custom_auth=']
-        self.common = open('res/' + args['common_words='], 'r').read().split('\n') if args['common_words='] else []
-        self.vectors = open('res/' + args['vectors='], 'r').read().split('\n') if args['vectors='] else []
-        self.sensitive = open('res/'+args['sensitive='], 'r').read().split('\n') if args['sensitive='] else []
+        #self.common = open('res/' + args['common_words='], 'r').read().split('\n') if args['common_words='] else []
+        #self.vectors = open('res/' + args['vectors='], 'r').read().split('\n') if args['vectors='] else []
+        #self.sensitive = open('res/'+args['sensitive='], 'r').read().split('\n') if args['sensitive='] else []
         self.random = args['random=']
         self.slow = args['slow=']
         self.accessible = []
         self.visited = []
+        self.c = open('res/common.txt','r').read().split('\n')
+        self.vec = open('res/vectors.txt', 'r').read().split('\n')
+        self.sen = open('res/sensitive.txt', 'r').read().split('\n')
 
 
     """
@@ -65,6 +68,15 @@ class Crawler:
         return r
 
     """
+    Used to discover potentially unlinked pages.
+    """
+    def post_url(self,url,s):
+        print(self.c)
+        r = s.post(url,self.c[0],allow_redirects=True)
+        return r
+
+
+    """
     Gets the pure HTML of a given page
     """
     def get_html(self, url, s):
@@ -77,6 +89,8 @@ class Crawler:
             form_data = dict(itertools.compress(form_data, self.vectors))
         r = s.post(url, data=form_data, allow_redirects=True)
 
+    def get_cookie(self,url,s):
+       print(s.cookies.values)
     """
     Crawls the webpage and finds all possible URLs to access
     returns the urls it successfully visited
