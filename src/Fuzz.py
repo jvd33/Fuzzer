@@ -52,6 +52,10 @@ def main():
             output_string += "Forms found on this page. Forms have fields: \n" + str(crawl.forms[url]) + "\n"
         else:
             output_string += "No form found on this page. \n"
+    output_string += "\n*****************\n Cookies \n*****************\n"
+
+    for key in crawl.cookies.keys():
+        output_string += key + " : " + crawl.cookies[key] + "\n"
 
     with open("output.txt", "a+") as f:
         f.seek(0)
