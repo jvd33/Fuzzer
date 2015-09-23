@@ -101,15 +101,15 @@ class Crawler:
     """
     def crawl(self):
         self.url = self.switch()
-        #open a new session
+        # open a new session
         with requests.Session() as s:
-            #get cookies and html from the initial page
+            # get cookies and html from the initial page
             r = s.post(self.url, data=getattr(self, self.authflag), allow_redirects=True) if self.authflag \
                 else s.get(self.url)
             html = r.text
             self.cookies.update(s.cookies.get_dict())
 
-            #if custom auth is on, go to the correct page
+            # if custom auth is on, go to the correct page
             if self.authflag == 'bodgeit':
                 self.url = 'http://127.0.0.1:8080/bodgeit/'
             elif self.authflag == 'dvwa':
@@ -117,17 +117,17 @@ class Crawler:
 
             self.visited.add(r.url)
 
-            #parse the HTML from the new URL
+            # parse the HTML from the new URL
             self.parser.parse(html, r.url)
 
-            #update the forms
+            # update the forms
             if self.parser.form_data:
                 self.forms.update({r.url: self.parser.form_data})
 
-            #add any new urls that were found to the list
+            # add any new urls that were found to the list
             self.accessible.extend(self.parser.found_urls)
 
-            for url in self.accessible: #for all accessible urls, visit them and parse
+            for url in self.accessible: # for all accessible urls, visit them and parse
                 if url not in self.visited:
                     self.accessible.remove(url)
                     self.crawl_helper(url, s)

@@ -29,11 +29,11 @@ class Parser():
 
 
         for element in soup.find_all('a'): #for all <a> elements
-            #if it contains 'href=', doesnt redirect, and hasn't been found yet
+            # if it contains 'href=', doesnt redirect, and hasn't been found yet
             if 'href' in element.attrs.keys() and element.attrs['href'].count('http') <= 1 \
                     and element.attrs['href'] not in self.urls and 'logout' not in element.attrs['href']:
 
-                #add it to found, and then add it to urls to pass to crawler
+                # add it to found, and then add it to urls to pass to crawler
                 if 'http' not in element.attrs['href']:
                     self.found_urls.append(urljoin(base_url, element.attrs['href']))
                 elif "127" in element.attrs['href']:
