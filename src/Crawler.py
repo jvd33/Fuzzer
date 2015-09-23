@@ -1,5 +1,4 @@
 __author__ = 'Joe'
-from requests.auth import HTTPBasicAuth
 import requests
 import re
 import Parser
@@ -13,6 +12,9 @@ Handles login authentication, cookies, and forms as well.
 """
 class Crawler:
 
+    """
+    Hard coded authentication information and file extensions for page guessing
+    """
     dvwa = {'username': 'admin', 'password': 'password', 'Login': 'Login'}
     bodgeit = {'username': 'fake@fake.com', 'password1': 'password', 'password2': 'password'}
     extensions = ['.jsp', '.php', '.html', '.js', '.asp']
@@ -21,6 +23,18 @@ class Crawler:
     Constructor.
     Takes the args object returned by argsparser in Fuzz.read_input()
     For the arrays, opens the file and reads in the data. Splits it by \n
+    mode = discover || test
+    url = the URL to start fuzzing from
+    authflag = custom authentication to DVWA or BodgeIt
+    common = text file of common words for guessing
+    vectors = text file of malicious input
+    sensitive = text file of target sensitive data
+    random = True/False
+    slow = time that is considered "slow"
+    accessible = list of accessible webpages
+    visited = set (unique list) of visited urls
+    forms = dictionary of form name and fields
+    cookies = dictionary of cookie names and values
     """
     def __init__(self, args):
         self.mode = args['mode']
@@ -63,15 +77,15 @@ class Crawler:
     """
     Used to discover potentially unlinked pages.
     """
-    def post_url(self,url,s):
+    def post_url(self, url, s):
         print(self.common)
         r = s.post(url,self.common[0],allow_redirects=True)
         return r
 
     """
-    Gets the pure HTML of a given page
+    Gets the response of a given page
     """
-    def get_html(self, url, s):
+    def get_response(self, url, s):
         r = s.get(url)
         return r
 
@@ -87,26 +101,33 @@ class Crawler:
     """
     def crawl(self):
         self.url = self.switch()
+        #open a new session
         with requests.Session() as s:
+            #get cookies and html from the initial page
             r = s.post(self.url, data=getattr(self, self.authflag), allow_redirects=True) if self.authflag \
                 else s.get(self.url)
             html = r.text
             self.cookies.update(s.cookies.get_dict())
 
+            #if custom auth is on, go to the correct page
             if self.authflag == 'bodgeit':
                 self.url = 'http://127.0.0.1:8080/bodgeit/'
             elif self.authflag == 'dvwa':
                 self.url = 'http://127.0.0.1/dvwa/'
 
             self.visited.add(r.url)
+
+            #parse the HTML from the new URL
             self.parser.parse(html, r.url)
 
+            #update the forms
             if self.parser.form_data:
                 self.forms.update({r.url: self.parser.form_data})
 
+            #add any new urls that were found to the list
             self.accessible.extend(self.parser.found_urls)
 
-            for url in self.accessible:
+            for url in self.accessible: #for all accessible urls, visit them and parse
                 if url not in self.visited:
                     self.accessible.remove(url)
                     self.crawl_helper(url, s)
@@ -115,12 +136,13 @@ class Crawler:
 
     """
     Helper function to visit each url
+    Parses them and gets the links, form data, and cookies from the webpage.
     """
     def crawl_helper(self, url, s):
-        html = self.get_html(url, s) if 'http:' in url else self.get_html(self.url + url, s)
+        html = self.get_response(url, s) if 'http:' in url else self.get_response(self.url + url, s)
         text = html.text
         parent_url = html.url
-        self.parser.parse(text, parent_url)
+        self.parser.parse(text, parent_url) #scan
         if self.parser.form_data:
             self.forms.update({url: self.parser.form_data})
         self.visited.add(url)

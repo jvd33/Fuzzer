@@ -10,6 +10,11 @@ import time
 Web fuzzer for SE331
 """
 
+"""
+Sets up the command line interface.
+Defines arguments as per the readme
+"""
+
 
 def read_input():
     parser = argparse.ArgumentParser(usage="python fuzz.py [discover | test] url OPTIONS")
@@ -38,6 +43,11 @@ def read_input():
 
     parser.add_argument("--slow=", type=int, help="Number of ms considered to be slow.", nargs='?')
     return vars(parser.parse_args())
+
+"""
+Main method for execution.
+"""
+
 
 def main():
 
