@@ -8,12 +8,9 @@ import itertools
 
 
 """
-Class representing a single new page that was discovered by the crawler
-children - a list of all pages that were found from the current page
-url - current url
+Crawls the webpage, following links gathered from the parser and randomly generated links.
+Handles login authentication, cookies, and forms as well.
 """
-
-
 class Crawler:
 
     dvwa = {'username': 'admin', 'password': 'password', 'Login': 'Login'}
@@ -38,14 +35,13 @@ class Crawler:
         self.accessible = []
         self.visited = set()
         self.forms = {}
-
+        self.cookies = {}
 
     """
     String representation of a Crawler for debugging.
     """
     def __str__(self):
         return "[" + self.mode[0] + ", " + self.url[0] + ", " + self.authflag + "]"
-
 
     """
     Acts as a switch/case.
@@ -60,7 +56,6 @@ class Crawler:
         }[self.authflag]
 
 
-
     def post_form(self, url, data, s):
         r = s.post(url, data=data, allow_redirects=True)
         return r
@@ -72,7 +67,6 @@ class Crawler:
         print(self.common)
         r = s.post(url,self.common[0],allow_redirects=True)
         return r
-
 
     """
     Gets the pure HTML of a given page
@@ -87,9 +81,6 @@ class Crawler:
             form_data = dict(itertools.compress(form_data, self.vectors))
         r = s.post(url, data=form_data, allow_redirects=True)
 
-    def get_cookie(self,url,s):
-        print(s.cookies.values)
-
     """
     Crawls the webpage and finds all possible URLs to access
     returns the urls it successfully visited
@@ -100,6 +91,7 @@ class Crawler:
             r = s.post(self.url, data=getattr(self, self.authflag), allow_redirects=True) if self.authflag \
                 else s.get(self.url)
             html = r.text
+            self.cookies.update(s.cookies.get_dict())
 
             if self.authflag == 'bodgeit':
                 self.url = 'http://127.0.0.1:8080/bodgeit/'
@@ -121,7 +113,6 @@ class Crawler:
 
         return self.visited, self.parser.form_data
 
-
     """
     Helper function to visit each url
     """
@@ -134,4 +125,5 @@ class Crawler:
             self.forms.update({url: self.parser.form_data})
         self.visited.add(url)
         self.accessible.extend([x for x in self.parser.found_urls if x not in self.visited])
+        self.cookies.update(s.cookies.get_dict())
         self.url = url
