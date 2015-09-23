@@ -36,7 +36,7 @@ class Crawler:
         self.random = args['random=']
         self.slow = args['slow=']
         self.accessible = []
-        self.visited = []
+        self.visited = set()
         self.forms = {}
 
 
@@ -56,7 +56,7 @@ class Crawler:
         return {
             'dvwa': 'http://127.0.0.1/dvwa/login.php',
             'bodgeit': 'http://127.0.0.1:8080/bodgeit/register.jsp',
-            '': 'http://127.0.0.1'
+            '': 'http://127.0.0.1/'
         }[self.authflag]
 
 
@@ -79,7 +79,7 @@ class Crawler:
     """
     def get_html(self, url, s):
         r = s.get(url)
-        return r.text if r.status_code == requests.codes.ok else ''
+        return r
 
     def submit_form(self, form_data, s, url):
         form_names = form_data
@@ -88,38 +88,50 @@ class Crawler:
         r = s.post(url, data=form_data, allow_redirects=True)
 
     def get_cookie(self,url,s):
-       print(s.cookies.values)
+        print(s.cookies.values)
 
     """
     Crawls the webpage and finds all possible URLs to access
     returns the urls it successfully visited
     """
     def crawl(self):
-        url = self.switch()
+        self.url = self.switch()
         with requests.Session() as s:
-            r = s.post(url, data=getattr(self, self.authflag), allow_redirects=True) if self.authflag \
-                else s.get(url)
+            r = s.post(self.url, data=getattr(self, self.authflag), allow_redirects=True) if self.authflag \
+                else s.get(self.url)
             html = r.text
-            self.url = 'http://127.0.0.1:8080/bodgeit/' if self.authflag == 'bodgeit' else 'http://127.0.0.1/dvwa/'
-            self.parser.parse(html)
+
+            if self.authflag == 'bodgeit':
+                self.url = 'http://127.0.0.1:8080/bodgeit/'
+            elif self.authflag == 'dvwa':
+                self.url = 'http://127.0.0.1/dvwa/'
+
+            self.visited.add(r.url)
+            self.parser.parse(html, r.url)
+
             if self.parser.form_data:
-                self.forms.update({self.url: self.parser.forms})
+                self.forms.update({r.url: self.parser.form_data})
+
             self.accessible.extend(self.parser.found_urls)
+
             for url in self.accessible:
                 if url not in self.visited:
                     self.accessible.remove(url)
                     self.crawl_helper(url, s)
+
         return self.visited, self.parser.form_data
 
 
     """
-    Helper function to make visit each url
+    Helper function to visit each url
     """
     def crawl_helper(self, url, s):
-        html = self.get_html(self.url + url, s)
-        self.parser.parse(html)
+        html = self.get_html(url, s) if 'http:' in url else self.get_html(self.url + url, s)
+        text = html.text
+        parent_url = html.url
+        self.parser.parse(text, parent_url)
         if self.parser.form_data:
             self.forms.update({url: self.parser.form_data})
-        self.visited.append(url)
-        self.accessible.extend(self.parser.found_urls)
-                
+        self.visited.add(url)
+        self.accessible.extend([x for x in self.parser.found_urls if x not in self.visited])
+        self.url = url
