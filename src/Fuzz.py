@@ -30,7 +30,7 @@ def read_input():
                         "for a specific application. Optional.", nargs='?', default='')
 
     parser.add_argument("--common-words=", help="Newline-delimited file of common words to be used " +
-                        "in page guessing and input guessing. Required.", nargs='?')
+                        "in page guessing and input guessing. Required.")
 
     parser.add_argument("--vectors=", help="Newline-delimited file full of possible vulnerabilities",
                         nargs='?')

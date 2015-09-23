@@ -3,6 +3,7 @@ import requests
 import re
 import Parser
 import random
+from urllib.parse import urljoin
 import itertools
 
 
@@ -10,6 +11,8 @@ import itertools
 Crawls the webpage, following links gathered from the parser and randomly generated links.
 Handles login authentication, cookies, and forms as well.
 """
+
+
 class Crawler:
 
     """
@@ -70,6 +73,9 @@ class Crawler:
         }[self.authflag]
 
 
+    """
+    Posts to a form. For R2
+    """
     def post_form(self, url, data, s):
         r = s.post(url, data=data, allow_redirects=True)
         return r
@@ -83,6 +89,21 @@ class Crawler:
         return r
 
     """
+    Generate random URLs to try to input, if the get request is successful, add the URL to the accessible list.
+    """
+    def find_random_urls(self, base_url, s):
+        for word in self.common:
+            extension = ''
+            extension += word  # append the common word to the string
+            for ext in self.extensions:
+                extension += ext  # append the file extensions. eg "admin.jsp, admin.php..."
+                url = urljoin(base_url, extension)  # completes the url by joining it with the base url.
+                extension = word  # reset the word so we generate valid urls
+                if s.get(url).status_code == requests.codes.ok:  # if the status code is ok then we can access the page.
+                    self.accessible.append(url)
+                    print("Found new URL!" + url + "\n")
+
+    """
     Gets the response of a given page
     """
     def get_response(self, url, s):
@@ -90,10 +111,9 @@ class Crawler:
         return r
 
     def submit_form(self, form_data, s, url):
-        form_names = form_data
         if self.vectors:
             form_data = dict(itertools.compress(form_data, self.vectors))
-        r = s.post(url, data=form_data, allow_redirects=True)
+        s.post(url, data=form_data, allow_redirects=True)
 
     """
     Crawls the webpage and finds all possible URLs to access
@@ -119,6 +139,7 @@ class Crawler:
 
             # parse the HTML from the new URL
             self.parser.parse(html, r.url)
+            self.find_random_urls(r.url, s)
 
             # update the forms
             if self.parser.form_data:
@@ -127,7 +148,7 @@ class Crawler:
             # add any new urls that were found to the list
             self.accessible.extend(self.parser.found_urls)
 
-            for url in self.accessible: # for all accessible urls, visit them and parse
+            for url in self.accessible:  # for all accessible urls, visit them and parse
                 if url not in self.visited:
                     self.accessible.remove(url)
                     self.crawl_helper(url, s)

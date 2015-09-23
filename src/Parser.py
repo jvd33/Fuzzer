@@ -39,4 +39,3 @@ class Parser():
                 elif "127" in element.attrs['href']:
                     self.found_urls.append(element.attrs['href'])
                 self.urls.append(element.attrs['href'])
-
