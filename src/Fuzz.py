@@ -17,7 +17,7 @@ Defines arguments as per the readme
 
 
 def read_input():
-    parser = argparse.ArgumentParser(usage="python fuzz.py [discover | test] url OPTIONS")
+    parser = argparse.ArgumentParser(usage="python fuzz.py [discover | test] url --common-words=textfile OPTIONS")
     parser.add_argument('mode', help="discover\n  Output a comprehensive, human readable " +
                                      "list of all discovered inputs to the system.\n" +
                                      "test\n      Discover all inputs, " +
@@ -25,12 +25,13 @@ def read_input():
                                      "Report vulnerabilities.", nargs=1)
 
     parser.add_argument('url', nargs=1, help="The URL to fuzz")
+
+    parser.add_argument("--common-words=", required=True, help="Newline-delimited file of common words to be used " +
+                        "in page guessing and input guessing. Required.")
+
     parser.add_argument("--custom-auth=", help=
                         "Signal that the fuzzer should use hard-coded authentication " +
                         "for a specific application. Optional.", nargs='?', default='')
-
-    parser.add_argument("--common-words=", help="Newline-delimited file of common words to be used " +
-                        "in page guessing and input guessing. Required.")
 
     parser.add_argument("--vectors=", help="Newline-delimited file full of possible vulnerabilities",
                         nargs='?')

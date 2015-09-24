@@ -92,6 +92,7 @@ class Crawler:
     Generate random URLs to try to input, if the get request is successful, add the URL to the accessible list.
     """
     def find_random_urls(self, base_url, s):
+        generated = []
         for word in self.common:
             extension = ''
             extension += word  # append the common word to the string
@@ -100,8 +101,8 @@ class Crawler:
                 url = urljoin(base_url, extension)  # completes the url by joining it with the base url.
                 extension = word  # reset the word so we generate valid urls
                 if s.get(url).status_code == requests.codes.ok:  # if the status code is ok then we can access the page.
-                    self.accessible.append(url)
-                    print("Found new URL!" + url + "\n")
+                    generated.append(url)
+        return generated
 
     """
     Gets the response of a given page
@@ -127,25 +128,28 @@ class Crawler:
             r = s.post(self.url, data=getattr(self, self.authflag), allow_redirects=True) if self.authflag \
                 else s.get(self.url)
             html = r.text
-            self.cookies.update(s.cookies.get_dict())
 
             # if custom auth is on, go to the correct page
             if self.authflag == 'bodgeit':
                 self.url = 'http://127.0.0.1:8080/bodgeit/'
             elif self.authflag == 'dvwa':
+                s.cookies.pop('security')
+                s.cookies['security'] = 'low'
                 self.url = 'http://127.0.0.1/dvwa/'
 
+            self.cookies.update(s.cookies.get_dict())
             self.visited.add(r.url)
 
             # parse the HTML from the new URL
             self.parser.parse(html, r.url)
-            self.find_random_urls(r.url, s)
 
             # update the forms
             if self.parser.form_data:
                 self.forms.update({r.url: self.parser.form_data})
 
-            # add any new urls that were found to the list
+            # add any new urls that were found to the
+            generated = self.find_random_urls(r.url, s)
+            self.accessible.extend(generated)
             self.accessible.extend(self.parser.found_urls)
 
             for url in self.accessible:  # for all accessible urls, visit them and parse
@@ -163,7 +167,7 @@ class Crawler:
         html = self.get_response(url, s) if 'http:' in url else self.get_response(self.url + url, s)
         text = html.text
         parent_url = html.url
-        self.parser.parse(text, parent_url) #scan
+        self.parser.parse(text, parent_url)  # scan
         if self.parser.form_data:
             self.forms.update({url: self.parser.form_data})
         self.visited.add(url)
