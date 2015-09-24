@@ -50,7 +50,7 @@ Main method for execution.
 """
 
 
-def main():
+if __name__ == "__main__":
 
     args = read_input()
     crawl = Crawler.Crawler(args)
@@ -61,8 +61,10 @@ def main():
         output_string += "\nURL: " + url + "\n"
         if url in crawl.forms.keys():
             output_string += "Forms found on this page. Forms have fields: \n" + str(crawl.forms[url]) + "\n"
-        else:
-            output_string += "No form found on this page. \n"
+        if url in crawl.url_params.keys() and crawl.url_params[url]:
+            output_string += "URL Parameters found. \n"
+            for key, val in crawl.url_params[url].items():
+                output_string += "Param name, val: " + str(key) + ", " + val[0] + "\n"
     output_string += "\n*****************\n Cookies \n*****************\n"
 
     for key in crawl.cookies.keys():
@@ -75,4 +77,3 @@ def main():
     print(output_string)
     print("Program runtime: " + str(time.time()-start_time) + "seconds")
 
-main()

@@ -3,7 +3,7 @@ import requests
 import re
 import Parser
 import random
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse, parse_qs
 import itertools
 
 
@@ -53,7 +53,7 @@ class Crawler:
         self.visited = set()
         self.forms = {}
         self.cookies = {}
-
+        self.url_params = {}
     """
     String representation of a Crawler for debugging.
     """
@@ -174,3 +174,4 @@ class Crawler:
         self.accessible.extend([x for x in self.parser.found_urls if x not in self.visited])
         self.cookies.update(s.cookies.get_dict())
         self.url = url
+        self.url_params.update({url: parse_qs(urlparse(url).query)})
