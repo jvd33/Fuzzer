@@ -1,4 +1,3 @@
-__author__ = 'joe'
 from bs4 import BeautifulSoup, SoupStrainer
 from urllib.parse import urljoin
 

@@ -1,7 +1,6 @@
-Update this as necessary.
 
 README:
-1. Install the python requests package and beautifulsoup by typing
+1. Install the python requests package and beautifulsoup using pip by typing
 "pip install requests" followed by "pip install beautifulsoup4" in the command line
 2. Download xampp-portable from http://yogi.se.rit.edu/~swen-331/bigfiles/xampp-portable.zip
 3. Run setup_xampp.bat
@@ -9,7 +8,7 @@ README:
 5. Run catalina_start.bat
 6. Run mysql_start.bat
 7. In the terminal, type python Fuzz.py [discover | test] url OPTIONS
-8. Fuzzing information is located in Fuzzer\src\output.txt
+8. Fuzzing log is located in Fuzzer\src\output.txt
 
 Additional Usage Information:
 
@@ -46,11 +45,8 @@ Author: Adam Audycki apa73952rit.edu
 
 Current features:
 Custom authentication
-Finding all URLs found in the HTML source
-User friendly command line interface
-
-todo:
-Discover new urls by modifying the url string, add extensions, change variables, etc.
-Parse URLs, break down and find the input ?foo=bar is the same as ?zoo=foo, find those matches
-Send form post requests to every form that we find during our crawl
-Cookies are also input. Currently saves session cookie, but that is it. Try inputting other cookies to the post requests
+Finding all URLs in the HTML source
+Guessing URLs on the domain
+Parsing URLs into their parameters
+Finding cookies
+Finding all form field data

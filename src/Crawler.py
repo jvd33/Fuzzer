@@ -1,4 +1,3 @@
-__author__ = 'Joe'
 import requests
 import re
 import Parser

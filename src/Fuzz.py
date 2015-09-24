@@ -1,4 +1,3 @@
-__author__ = 'Joe'
 import argparse
 import sys
 sys.path.append("src/")
