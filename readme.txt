@@ -7,8 +7,9 @@ README:
 4. Run apache_start.bat
 5. Run catalina_start.bat
 6. Run mysql_start.bat
-7. In the terminal, type python Fuzz.py [discover | test] url OPTIONS
-8. Fuzzing log is located in Fuzzer\src\output.txt
+7. Place all required txt files in Fuzzer/src/res/
+8. In the terminal, type python Fuzz.py [discover | test] url --common-words=textfile OPTIONS
+9. Fuzzing log is located in Fuzzer\src\output.txt
 
 Additional Usage Information:
 
