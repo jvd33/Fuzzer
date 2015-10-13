@@ -54,20 +54,27 @@ if __name__ == "__main__":
     args = read_input()
     crawl = Crawler.Crawler(args)
     start_time = time.time()
-    crawl.crawl()
-    output_string = "*****************\n" + "URLs and Forms Found \n*****************\n"
-    for url in crawl.visited:
-        output_string += "\nURL: " + url + "\n"
-        if url in crawl.forms.keys():
-            output_string += "Forms found on this page. Forms have fields: \n" + str(crawl.forms[url]) + "\n"
-        if url in crawl.url_params.keys() and crawl.url_params[url]:
-            output_string += "URL Parameters found. \n"
-            for key, val in crawl.url_params[url].items():
-                output_string += "Param name, val: " + str(key) + ", " + val[0] + "\n"
-    output_string += "\n*****************\n Cookies \n*****************\n"
+    output_string = ""
+    if crawl.mode[0] == "discover":
+        crawl.crawl()
+        output_string = "*****************\n" + "URLs and Forms Found \n*****************\n"
+        for url in crawl.visited:
+            output_string += "\nURL: " + url + "\n"
+            if url in crawl.forms.keys():
+                output_string += "Forms found on this page. Forms have fields: \n" + str(crawl.forms[url]) + "\n"
+            if url in crawl.url_params.keys() and crawl.url_params[url]:
+                output_string += "URL Parameters found. \n"
+                for key, val in crawl.url_params[url].items():
+                    output_string += "Param name, val: " + str(key) + ", " + val[0] + "\n"
+        output_string += "\n*****************\n Cookies \n*****************\n"
 
-    for key in crawl.cookies.keys():
-        output_string += key + " : " + crawl.cookies[key] + "\n"
+        for key in crawl.cookies.keys():
+            output_string += key + " : " + crawl.cookies[key] + "\n"
+
+    elif crawl.mode[0] == "test":
+        crawl.test()
+        output_string = "*************\nUnexpected behavior found.\n*************"
+        print("TESTING")
 
     with open("output.txt", "a+") as f:
         f.seek(0)

@@ -43,7 +43,7 @@ class Crawler:
         self.url = args['url'][0]
         self.parser = Parser.Parser()
         self.authflag = args['custom_auth=']
-        self.common = open('res/' + args['common_words='], 'r').read().split('\n') if args['common_words='] else []
+        self.common = open('res/' + args['common_words='], 'r').read().split('\n')
         self.vectors = open('res/' + args['vectors='], 'r').read().split('\n') if args['vectors='] else []
         self.sensitive = open('res/'+args['sensitive='], 'r').read().split('\n') if args['sensitive='] else []
         self.random = args['random=']
@@ -71,20 +71,19 @@ class Crawler:
             '': 'http://127.0.0.1/'
         }[self.authflag]
 
+    """
+    Generates form data to post in an attempt to find vulnerabilities.
+    n = number of fields found on the webpage to post to
+    """
+    def gen_form_data(self, n):
+        pass
+
 
     """
     Posts to a form. For R2
     """
     def post_form(self, url, data, s):
         r = s.post(url, data=data, allow_redirects=True)
-        return r
-
-    """
-    Used to discover potentially unlinked pages.
-    """
-    def post_url(self, url, s):
-        print(self.common)
-        r = s.post(url,self.common[0],allow_redirects=True)
         return r
 
     """
@@ -174,3 +173,5 @@ class Crawler:
         self.cookies.update(s.cookies.get_dict())
         self.url = url
         self.url_params.update({url: parse_qs(urlparse(url).query)})
+
+
