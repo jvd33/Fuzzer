@@ -1,5 +1,5 @@
 import requests
-import re
+import time
 import Parser
 import random
 from urllib.parse import urljoin, urlparse, parse_qs
@@ -83,8 +83,8 @@ class Crawler:
     Posts to a form. For R2
     """
     def post_form(self, url, data, s):
-        r = s.post(url, data=data, allow_redirects=True)
-        return r
+        return s.post(url, data=data, allow_redirects=True)
+
 
     """
     Generate random URLs to try to input, if the get request is successful, add the URL to the accessible list.
@@ -173,5 +173,42 @@ class Crawler:
         self.cookies.update(s.cookies.get_dict())
         self.url = url
         self.url_params.update({url: parse_qs(urlparse(url).query)})
+
+
+    def test(self):
+        self.crawl()
+        output = ""
+        with requests.Session() as s:
+            if self.random:
+                random.seed()
+                while self.visited:
+                    target = self.visited.pop()
+                    data = {}
+                    if target in self.forms.keys():
+                        for key in self.forms[target]:
+                            data.update({key, self.vectors[random.randint(0, len(self.vectors))]})
+                            response = self.post_form(target, data, s)
+                            output += self.check_response(response)
+
+            else:
+                for url in self.visited:
+                    data = {}
+                    if url in self.forms.keys():
+                        for key in self.forms[url]:
+                            for vector in self.vectors:
+                                data.update({key, vector})
+                                response = self.post_form(url, data, s)
+                                output += self.check_response(response)
+            return output
+
+    def check_response(self, r):
+        output = ""
+        if r.status_code != requests.codes.ok:
+            output += "\nPosting to " + r.url + " with vector returns invalid response.\n"
+        elif r.elapsed > self.slow:
+            output += "\nResponse time for post to " + r.url + " was slow. Time: " + r.elapsed + "\n"
+
+        return output
+
 
 

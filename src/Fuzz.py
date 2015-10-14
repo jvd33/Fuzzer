@@ -72,9 +72,9 @@ if __name__ == "__main__":
             output_string += key + " : " + crawl.cookies[key] + "\n"
 
     elif crawl.mode[0] == "test":
-        crawl.test()
+        # crawl.test()
         output_string = "*************\nUnexpected behavior found.\n*************"
-        print("TESTING")
+        output_string += crawl.test()
 
     with open("output.txt", "a+") as f:
         f.seek(0)
