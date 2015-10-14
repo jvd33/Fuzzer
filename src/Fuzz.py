@@ -41,7 +41,7 @@ def read_input():
     parser.add_argument("--random=", action="store_true", help="When off, try each input systematically. " +
                         "When on, choose randomly.", default=False)
 
-    parser.add_argument("--slow=", type=int, help="Number of ms considered to be slow.", nargs='?')
+    parser.add_argument("--slow=", type=int, help="Number of ms considered to be slow.", nargs='?', default=500)
     return vars(parser.parse_args())
 
 """
@@ -74,7 +74,8 @@ if __name__ == "__main__":
     elif crawl.mode[0] == "test":
         # crawl.test()
         output_string = "*************\nUnexpected behavior found.\n*************"
-        output_string += crawl.test()
+        for s in crawl.test():
+            output_string += s
 
     with open("output.txt", "a+") as f:
         f.seek(0)

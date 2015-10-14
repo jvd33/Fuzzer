@@ -1,5 +1,5 @@
 import requests
-import time
+from datetime import timedelta
 import Parser
 import random
 from urllib.parse import urljoin, urlparse, parse_qs
@@ -47,11 +47,12 @@ class Crawler:
         self.vectors = open('res/' + args['vectors='], 'r').read().split('\n') if args['vectors='] else []
         self.sensitive = open('res/'+args['sensitive='], 'r').read().split('\n') if args['sensitive='] else []
         self.random = args['random=']
-        self.slow = args['slow=']
+        self.slow = timedelta(milliseconds=args['slow='])
         self.accessible = []
         self.visited = set()
         self.forms = {}
         self.cookies = {}
+        self.session = None
         self.url_params = {}
     """
     String representation of a Crawler for debugging.
@@ -134,7 +135,7 @@ class Crawler:
                 s.cookies.pop('security')
                 s.cookies['security'] = 'low'
                 self.url = 'http://127.0.0.1/dvwa/'
-
+            self.session = s
             self.cookies.update(s.cookies.get_dict())
             self.visited.add(r.url)
 
@@ -174,39 +175,50 @@ class Crawler:
         self.url = url
         self.url_params.update({url: parse_qs(urlparse(url).query)})
 
-
+    """
+    Submits vectors to forms and logs behavior.
+    Submits to all forms on each webpage that has forms
+    """
     def test(self):
         self.crawl()
-        output = ""
-        with requests.Session() as s:
+        output = set()
+        with self.session as s:
             if self.random:
                 random.seed()
                 while self.visited:
                     target = self.visited.pop()
                     data = {}
-                    if target in self.forms.keys():
+                    if target in self.forms.keys() and 'login' not in url:
                         for key in self.forms[target]:
-                            data.update({key, self.vectors[random.randint(0, len(self.vectors))]})
+                            data.update({key: self.vectors[random.randint(0, len(self.vectors))]})
                             response = self.post_form(target, data, s)
-                            output += self.check_response(response)
+                            output.add(self.check_response(response))
 
             else:
                 for url in self.visited:
                     data = {}
-                    if url in self.forms.keys():
+                    if url in self.forms.keys() and 'login' not in url:
                         for key in self.forms[url]:
                             for vector in self.vectors:
-                                data.update({key, vector})
+                                data.update({key: vector})
                                 response = self.post_form(url, data, s)
-                                output += self.check_response(response)
+                                output.add(self.check_response(response, vector))
             return output
 
-    def check_response(self, r):
+    """
+    Check the response of each sent vector.
+    """
+    def check_response(self, r, v):
         output = ""
         if r.status_code != requests.codes.ok:
-            output += "\nPosting to " + r.url + " with vector returns invalid response.\n"
-        elif r.elapsed > self.slow:
-            output += "\nResponse time for post to " + r.url + " was slow. Time: " + r.elapsed + "\n"
+            output += "\nPosting to " + r.url + " with vector " + v + " returns invalid response " + str(r.status_code) + "\n"
+        if r.elapsed > self.slow:
+            output += "\nResponse time for post to " + r.url + " was slow. Time: " + str(r.elapsed) + "\n"
+        for sens in self.sensitive:
+            if sens in r.text:
+                output += "\nSensitive data leaked from " + r.url + " " + sens + " found.\n"
+
+
 
         return output
 
