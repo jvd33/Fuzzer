@@ -193,7 +193,7 @@ class Crawler:
                         for key in self.forms[target]:
                             data.update({key: self.vectors[random.randint(0, len(self.vectors))]})
                             response = self.post_form(target, data, s)
-                            if vector==response:
+                            if vector == response:
                                 sanitized = False
                             output.add(self.check_response(response,vector,sanitized))
 
@@ -206,12 +206,9 @@ class Crawler:
                             for vector in self.vectors:
                                 data.update({key: vector})
                                 response = self.post_form(url, data, s)
-                                if response == data:
+                                if response == vector:
                                     sanitized = False
-                                output.add(self.check_response(response, vector,sanitized))
-
-                                
-            print(sanitized)                        
+                                output.add(self.check_response(response, vector,sanitized))                     
             return output
 
     """
