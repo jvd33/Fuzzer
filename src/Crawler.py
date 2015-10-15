@@ -3,9 +3,6 @@ from datetime import timedelta
 import Parser
 import random
 from urllib.parse import urljoin, urlparse, parse_qs
-
-
-
 """
 Crawls the webpage, following links gathered from the parser and randomly generated links.
 Handles login authentication, cookies, and forms as well.
@@ -54,6 +51,7 @@ class Crawler:
         self.cookies = {}
         self.session = None
         self.url_params = {}
+
     """
     String representation of a Crawler for debugging.
     """
@@ -108,6 +106,7 @@ class Crawler:
                 s.cookies.pop('security')
                 s.cookies['security'] = 'low'
                 self.url = 'http://127.0.0.1/dvwa/'
+                
             self.session = s
             self.cookies.update(s.cookies.get_dict())
             self.visited.add(r.url)
@@ -163,7 +162,7 @@ class Crawler:
                     data = {}
                     if target in self.forms.keys() and 'login' not in target:
                         for key in self.forms[target]:
-                            vector = self.vectors[random.randint(0, len(self.vectors))]
+                            vector = self.vectors[random.randint(0, len(self.vectors)-1)]
                             data.update({key: vector})
                             response = s.post(target, data=data, allow_redirects=True)
                             temp = self.check_response(response, vector)
