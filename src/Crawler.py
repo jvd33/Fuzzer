@@ -180,6 +180,7 @@ class Crawler:
     Submits to all forms on each webpage that has forms
     """
     def test(self):
+        sanitized = True
         self.crawl()
         output = set()
         with self.session as s:
@@ -192,7 +193,10 @@ class Crawler:
                         for key in self.forms[target]:
                             data.update({key: self.vectors[random.randint(0, len(self.vectors))]})
                             response = self.post_form(target, data, s)
-                            output.add(self.check_response(response))
+                            if vector==response:
+                                sanitized = False
+                            output.add(self.check_response(response,vector,sanitized))
+
 
             else:
                 for url in self.visited:
@@ -202,13 +206,18 @@ class Crawler:
                             for vector in self.vectors:
                                 data.update({key: vector})
                                 response = self.post_form(url, data, s)
-                                output.add(self.check_response(response, vector))
+                                if response == data:
+                                    sanitized = False
+                                output.add(self.check_response(response, vector,sanitized))
+
+                                
+            print(sanitized)                        
             return output
 
     """
     Check the response of each sent vector.
     """
-    def check_response(self, r, v):
+    def check_response(self, r, v, san):
         output = ""
         if r.status_code != requests.codes.ok:
             output += "\nPosting to " + r.url + " with vector " + v + " returns invalid response " + str(r.status_code) + "\n"
@@ -217,9 +226,10 @@ class Crawler:
         for sens in self.sensitive:
             if sens in r.text:
                 output += "\nSensitive data leaked from " + r.url + " " + sens + " found.\n"
-
-
-
+        if san == True:
+            output += "\nInputs are sanitized\n"
+        else:
+            output += "\nInputs are not sanitized\n"
         return output
 
 
