@@ -32,13 +32,13 @@ OPTIONS:
 
 Examples:
   # Discover inputs
-  fuzz discover http://localhost:8080 --common-words=mywords.txt
+	python Fuzz.py discover http://localhost:8080 --common-words=mywords.txt
 
   # Discover inputs to DVWA using our hard-coded authentication
-  fuzz discover http://localhost:8080 --common-words=mywords.txt
+	python Fuzz.py discover http://localhost:8080 --common-words=mywords.txt
 
   # Discover and Test DVWA without randomness
-  fuzz test http://localhost:8080 --custom-auth=dvwa --common-words=words.txt --vectors=vectors.txt --sensitive=creditcards.txt --random=false
+	python Fuzz.py test http://localhost:8080 --custom-auth=dvwa --common-words=words.txt --vectors=vectors.txt --sensitive=creditcards.txt --random=false
 
 http://www.se.rit.edu/~swen-331/projects/fuzzer/
 Author: Joe Diment jvd5839@rit.edu
