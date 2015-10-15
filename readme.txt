@@ -51,6 +51,7 @@ Guessing URLs on the domain
 Parsing URLs into their parameters
 Finding cookies
 Finding all form field data
+Testing inputs and logging any undesirable behavior
 Checking if sensitive data is leaked
 Delayed response checking
 Reporting http response codes
