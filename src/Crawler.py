@@ -3,7 +3,7 @@ from datetime import timedelta
 import Parser
 import random
 from urllib.parse import urljoin, urlparse, parse_qs
-import itertools
+
 
 
 """
@@ -73,21 +73,6 @@ class Crawler:
         }[self.authflag]
 
     """
-    Generates form data to post in an attempt to find vulnerabilities.
-    n = number of fields found on the webpage to post to
-    """
-    def gen_form_data(self, n):
-        pass
-
-
-    """
-    Posts to a form. For R2
-    """
-    def post_form(self, url, data, s):
-        return s.post(url, data=data, allow_redirects=True)
-
-
-    """
     Generate random URLs to try to input, if the get request is successful, add the URL to the accessible list.
     """
     def find_random_urls(self, base_url, s):
@@ -102,18 +87,6 @@ class Crawler:
                 if s.get(url).status_code == requests.codes.ok:  # if the status code is ok then we can access the page.
                     generated.append(url)
         return generated
-
-    """
-    Gets the response of a given page
-    """
-    def get_response(self, url, s):
-        r = s.get(url)
-        return r
-
-    def submit_form(self, form_data, s, url):
-        if self.vectors:
-            form_data = dict(itertools.compress(form_data, self.vectors))
-        s.post(url, data=form_data, allow_redirects=True)
 
     """
     Crawls the webpage and finds all possible URLs to access
@@ -146,7 +119,7 @@ class Crawler:
             if self.parser.form_data:
                 self.forms.update({r.url: self.parser.form_data})
 
-            # add any new urls that were found to the
+            # add any new urls that were found to the list
             generated = self.find_random_urls(r.url, s)
             self.accessible.extend(generated)
             self.accessible.extend(self.parser.found_urls)
@@ -163,7 +136,7 @@ class Crawler:
     Parses them and gets the links, form data, and cookies from the webpage.
     """
     def crawl_helper(self, url, s):
-        html = self.get_response(url, s) if 'http:' in url else self.get_response(self.url + url, s)
+        html = s.get(url) if 'http:' in url else s.get(self.url + url)
         text = html.text
         parent_url = html.url
         self.parser.parse(text, parent_url)  # scan
@@ -180,7 +153,6 @@ class Crawler:
     Submits to all forms on each webpage that has forms
     """
     def test(self):
-        sanitized = True
         self.crawl()
         output = set()
         with self.session as s:
@@ -189,14 +161,14 @@ class Crawler:
                 while self.visited:
                     target = self.visited.pop()
                     data = {}
-                    if target in self.forms.keys() and 'login' not in url:
+                    if target in self.forms.keys() and 'login' not in target:
                         for key in self.forms[target]:
-                            data.update({key: self.vectors[random.randint(0, len(self.vectors))]})
-                            response = self.post_form(target, data, s)
-                            if vector==response:
-                                sanitized = False
-                            output.add(self.check_response(response,vector,sanitized))
-
+                            vector = self.vectors[random.randint(0, len(self.vectors))]
+                            data.update({key: vector})
+                            response = s.post(target, data=data, allow_redirects=True)
+                            temp = self.check_response(response, vector)
+                            if temp not in output:
+                                output.add(temp)
 
             else:
                 for url in self.visited:
@@ -204,33 +176,49 @@ class Crawler:
                     if url in self.forms.keys() and 'login' not in url:
                         for key in self.forms[url]:
                             for vector in self.vectors:
-                                data.update({key: vector})
-                                response = self.post_form(url, data, s)
-                                if response == data:
-                                    sanitized = False
-                                output.add(self.check_response(response, vector,sanitized))
+                                if key == "Submit" or key == "submit":
+                                    data.update({key: "Submit"})
+                                else:
+                                    data.update({key: vector})
 
-                                
-            print(sanitized)                        
+                                response = s.post(url, data=data, allow_redirects=True)
+                                temp = self.check_response(response, vector)
+                                if temp not in output:
+                                    output.add(temp)
+
             return output
 
     """
     Check the response of each sent vector.
     """
-    def check_response(self, r, v, san):
+    def check_response(self, r, v):
         output = ""
-        if r.status_code != requests.codes.ok:
-            output += "\nPosting to " + r.url + " with vector " + v + " returns invalid response " + str(r.status_code) + "\n"
-        if r.elapsed > self.slow:
-            output += "\nResponse time for post to " + r.url + " was slow. Time: " + str(r.elapsed) + "\n"
-        for sens in self.sensitive:
+        sanitized = ["<", ">", "/", "\\", "'"]
+
+        if r.status_code != requests.codes.ok:  # bad response exploit check
+            output += "\nPosting to " + r.url + " with vector " + v + \
+                      " returns invalid response " + self.http_codes(r.status_code) + "\n"
+
+        if r.elapsed > self.slow:  # slow response exploit check
+            output += "\nResponse time for post to " + r.url + " was slow with vector " + v + "\n"
+
+        for sens in self.sensitive:  # sensitive data exploit check
             if sens in r.text:
                 output += "\nSensitive data leaked from " + r.url + " " + sens + " found.\n"
-        if san == True:
-            output += "\nInputs are sanitized\n"
-        else:
-            output += "\nInputs are not sanitized\n"
+
+        for char in sanitized:  # input sanitization check
+            if char in v:
+                if v in r.text:
+                    output += "\nPossible lack of sanitation on " + r.url + ", vector " + v + " not sanitized.\n"
+
         return output
 
-
-
+    """
+    human-readable http codes
+    """
+    def http_codes(self, code):
+        return {
+            500: '500, internal server error encountered',
+            400 : '400, bad request sent.',
+            403 : '403, page access is forbidden.'
+        }.get(code)

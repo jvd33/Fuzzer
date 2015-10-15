@@ -51,3 +51,4 @@ Guessing URLs on the domain
 Parsing URLs into their parameters
 Finding cookies
 Finding all form field data
+Testing inputs and logging any undesirable behavior
